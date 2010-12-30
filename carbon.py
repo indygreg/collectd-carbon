@@ -21,6 +21,8 @@ sock = None
 types = {}
 
 def carbon_parse_types_file(path):
+    global types
+
     f = open(path, 'r')
 
     for line in f:
@@ -35,7 +37,7 @@ def carbon_parse_types_file(path):
             ds_fields = ds.split(':')
 
             if len(ds_fields) != 4:
-                collect.warning('invalid types.db data source type: %s' % ds)
+                collectd.warning('invalid types.db data source type: %s' % ds)
                 continue
 
             v.append(ds_fields)
@@ -45,8 +47,7 @@ def carbon_parse_types_file(path):
     f.close()
 
 def carbon_config(c):
-    if c.values[0] != 'carbon':
-        return
+    global host, port
 
     for child in c.children:
         if child.key == 'LineReceiverHost':
@@ -62,12 +63,16 @@ def carbon_config(c):
     if not port:
         raise Exception('LineReceiverPort not defined')
 
+def carbon_init():
+    global host, port, sock
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((host, port))
 
 def carbon_write(v):
     # TODO try to reconnect gracefully
     if not sock:
+        collectd.warning('no connection to carbon server')
         return
 
     if v.type not in types:
@@ -112,5 +117,6 @@ def carbon_write(v):
     sock.send('\n'.join(lines))
 
 collectd.register_config(carbon_config)
+collectd.register_init(carbon_init)
 collectd.register_write(carbon_write)
 
