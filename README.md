@@ -9,7 +9,7 @@ The plugin requires some configuration. This is done by passing parameters via t
 * LineReceiverHost - hostname or IP address where a Carbon line receiver is listening
 * LineReceiverPort - port on which line receiver is listening
 
-=Data Mangling
+#Data Mangling
 
 Collectd data is collected/written in discrete tuples having the following:
 
