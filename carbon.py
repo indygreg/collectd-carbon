@@ -110,7 +110,7 @@ def carbon_write(v):
         path_fields.append(ds_name)
 
         # TODO handle different data types here
-        line = '%s %d %f' % ( '.'.join(path_fields), time, value )
+        line = '%s %f %d' % ( '.'.join(path_fields), value, time )
         lines.append(line)
 
     lines.append('')
