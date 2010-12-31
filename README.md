@@ -8,6 +8,7 @@ The plugin requires some configuration. This is done by passing parameters via t
 
 * LineReceiverHost - hostname or IP address where a Carbon line receiver is listening
 * LineReceiverPort - port on which line receiver is listening
+* TypesFile - file defining your Collectd types. This should be the sames as your TypesDB global config parameters. This is needed so the plugin can associate proper names for each data field within complex types. The plugin has to reparse the types files for the names because the Collectd Python API does not provide the means to extract them (the Perl and Java APIs do, however). If you do not define this parameter or do not have complete parameter definition, the plugin will spew errors for unknown data types.
 
 #Data Mangling
 
