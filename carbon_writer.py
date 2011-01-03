@@ -55,7 +55,8 @@ def carbon_config(c):
         elif child.key == 'LineReceiverPort':
             port = int(child.values[0])
         elif child.key == 'TypesFile':
-            carbon_parse_types_file(child.values[0])
+            for v in child.values:
+                carbon_parse_types_file(v)
 
     if not host:
         raise Exception('LineReceiverHost not defined')
