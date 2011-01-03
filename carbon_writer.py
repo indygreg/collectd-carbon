@@ -95,15 +95,13 @@ def carbon_write(v):
 
     metric_fields = [ v.host.replace('.', '_') ]
 
-    s = v.plugin
+    metric_fields.append(v.plugin)
     if v.plugin_instance:
-        s = '-'.join([s, v.plugin_instance])
-    metric_fields.append(s)
+        metric_fields.append(v.plugin_instance)
 
-    s = v.type
+    metric_fields.append(v.type)
     if v.type_instance:
-        s = '-'.join([s, v.type_instance])
-    metric_fields.append(s)
+        metric_fields.append(v.type_instance)
 
     time = v.time
 
