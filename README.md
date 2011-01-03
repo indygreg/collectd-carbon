@@ -26,8 +26,8 @@ This plugin mangles the fields to the metric name:
 
 Where *data_source* is the name of the data source (i.e. ds_name) in the type being written.
 
-For example, the Collectd distribution has a built-in type:
+For example, the Collectd distribution has a built-in _df_ type:
 
   df used:GAUGE:0:1125899906842623, free:GAUGE:0:1125899906842623
 
-The *data_source* values for this type would be *used* and *free*.
+The *data_source* values for this type would be *used* and *free* yielding the metrics (along the lines of) *hostname_domain.plugin.df.used* and *hostname_domain.plugin.df.free*.
