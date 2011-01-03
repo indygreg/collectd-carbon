@@ -18,9 +18,7 @@ from time import time
 
 host = None
 port = None
-sock = None
 types = {}
-last_connect_time = 0
 
 def carbon_parse_types_file(path):
     global types
@@ -65,23 +63,50 @@ def carbon_config(c):
     if not port:
         raise Exception('LineReceiverPort not defined')
 
-def carbon_connect():
-    global host, port, sock, last_connect_time
+def carbon_init():
+    global host, port
+    import threading
 
-    if not sock:
-        if time() - last_connect_time > 10:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect((host, port))
-        else:
-            collectd.info('waiting for timeout to attempt connection again')
+    d = { 'host': host, 'port': port, 'sock': None, 'lock': threading.Lock() }
 
-    return sock != None
+    carbon_connect(d)
 
-def carbon_write(v):
-    global sock
+    collectd.register_write(carbon_write, data=d)
 
-    # TODO try to reconnect gracefully
-    if not carbon_connect():
+def carbon_connect(data):
+    result = False
+
+    data['lock'].acquire()
+    if not data['sock']:
+        collectd.info('connecting to %s:%s' % ( data['host'], data['port'] ) )
+        try:
+            data['sock'] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            data['sock'].connect((host, port))
+            result = True
+        except:
+            result = False
+            collectd.warning('error connecting socket')
+    else:
+        result = True
+
+    data['lock'].release()
+
+    return result
+
+def carbon_write_data(data, s):
+    result = False
+    data['lock'].acquire()
+    try:
+        data['sock'].sendall(s)
+        result = True
+    except:
+        collectd.warning('error sending data')
+
+    data['lock'].release()
+    return result
+
+def carbon_write(v, data=None):
+    if not carbon_connect(data):
         collectd.warning('no connection to carbon server')
         return
 
@@ -122,7 +147,7 @@ def carbon_write(v):
         lines.append(line)
 
     lines.append('')
-    sock.sendall('\n'.join(lines))
+    carbon_write_data(data, '\n'.join(lines))
 
 collectd.register_config(carbon_config)
-collectd.register_write(carbon_write)
+collectd.register_init(carbon_init)
