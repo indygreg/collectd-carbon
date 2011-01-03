@@ -14,7 +14,7 @@ The plugin requires some configuration. This is done by passing parameters via t
 
 Collectd data is collected/written in discrete tuples having the following:
 
-  (host, plugin, plugin_instance, type, type_instance, time, interval, metadata, values)
+    (host, plugin, plugin_instance, type, type_instance, time, interval, metadata, values)
 
 _values_ is itself a list of { counter, gauge, derive, absolute } (numeric) values. To further complicate things, each distinct _type_ has its own definition corresponding to what's in the _values_ field.
 
@@ -22,12 +22,12 @@ Graphite, by contrast, deals with tuples of ( metric, value, time ). So, we effe
 
 This plugin mangles the fields to the metric name:
 
-  host.plugin[.plugin_instance].type[.type_instance].data_source
+    host.plugin[.plugin_instance].type[.type_instance].data_source
 
 Where *data_source* is the name of the data source (i.e. ds_name) in the type being written.
 
 For example, the Collectd distribution has a built-in _df_ type:
 
-  df used:GAUGE:0:1125899906842623, free:GAUGE:0:1125899906842623
+    df used:GAUGE:0:1125899906842623, free:GAUGE:0:1125899906842623
 
 The *data_source* values for this type would be *used* and *free* yielding the metrics (along the lines of) *hostname_domain.plugin.df.used* and *hostname_domain.plugin.df.free*.
