@@ -63,15 +63,18 @@ def carbon_config(c):
     if not port:
         raise Exception('LineReceiverPort not defined')
 
-def carbon_init():
+def carbon_connect():
     global host, port, sock
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((host, port))
+    if not sock:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((host, port))
+
+    return sock != None
 
 def carbon_write(v):
     # TODO try to reconnect gracefully
-    if not sock:
+    if not carbon_connect():
         collectd.warning('no connection to carbon server')
         return
 
