@@ -125,6 +125,4 @@ def carbon_write(v):
     sock.send('\n'.join(lines))
 
 collectd.register_config(carbon_config)
-collectd.register_init(carbon_init)
 collectd.register_write(carbon_write)
-
