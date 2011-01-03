@@ -78,6 +78,8 @@ def carbon_connect():
     return sock != None
 
 def carbon_write(v):
+    global sock
+
     # TODO try to reconnect gracefully
     if not carbon_connect():
         collectd.warning('no connection to carbon server')
