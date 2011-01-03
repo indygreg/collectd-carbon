@@ -54,7 +54,7 @@ def carbon_config(c):
             host = child.values[0]
         elif child.key == 'LineReceiverPort':
             port = int(child.values[0])
-        elif child.key == 'TypesFile':
+        elif child.key == 'TypesDB':
             for v in child.values:
                 carbon_parse_types_file(v)
 

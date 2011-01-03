@@ -8,7 +8,7 @@ The plugin requires some configuration. This is done by passing parameters via t
 
 * LineReceiverHost - hostname or IP address where a Carbon line receiver is listening
 * LineReceiverPort - port on which line receiver is listening
-* TypesFile - file defining your Collectd types. This should be the sames as your TypesDB global config parameters. This is needed so the plugin can associate proper names for each data field within complex types. The plugin has to reparse the types files for the names because the Collectd Python API does not provide the means to extract them (the Perl and Java APIs do, however). If you do not define this parameter or do not have complete parameter definition, the plugin will spew errors for unknown data types.
+* TypesDB - file defining your Collectd types. This should be the sames as your TypesDB global config parameters. This is needed so the plugin can associate proper names for each data field within complex types. The plugin has to reparse the types files for the names because the Collectd Python API does not provide the means to extract them (the Perl and Java APIs do, however). If you do not define this parameter or do not have complete parameter definition, the plugin will spew errors for unknown data types.
 
 #Data Mangling
 
@@ -22,7 +22,12 @@ Graphite, by contrast, deals with tuples of ( metric, value, time ). So, we effe
 
 This plugin mangles the fields to the metric name:
 
-  host.plugin[-plugin_instance].type[-type_instance].data_source
+  host.plugin[.plugin_instance].type[.type_instance].data_source
 
 Where *data_source* is the name of the data source (i.e. ds_name) in the type being written.
 
+For example, the Collectd distribution has a built-in type:
+
+  df used:GAUGE:0:1125899906842623, free:GAUGE:0:1125899906842623
+
+The *data_source* values for this type would be *used* and *free*.
