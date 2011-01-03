@@ -14,11 +14,13 @@
 #
 import collectd
 import socket
+from time import time
 
 host = None
 port = None
 sock = None
 types = {}
+last_connect_time = 0
 
 def carbon_parse_types_file(path):
     global types
@@ -64,11 +66,14 @@ def carbon_config(c):
         raise Exception('LineReceiverPort not defined')
 
 def carbon_connect():
-    global host, port, sock
+    global host, port, sock, last_connect_time
 
     if not sock:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((host, port))
+        if time() - last_connect_time > 10:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((host, port))
+        else:
+            collectd.info('waiting for timeout to attempt connection again')
 
     return sock != None
 
