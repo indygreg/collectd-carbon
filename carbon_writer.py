@@ -13,8 +13,10 @@
 #  limitations under the License.
 #
 import collectd
+import errno
 import socket
 from time import time
+from traceback import format_exc
 
 host = None
 port = None
@@ -81,7 +83,8 @@ def carbon_init():
         'derive': derive,
         'sock': None,
         'lock': threading.Lock(),
-        'values': { }
+        'values': { },
+        'last_connect_time': 0
     }
 
     carbon_connect(d)
@@ -91,8 +94,13 @@ def carbon_init():
 def carbon_connect(data):
     result = False
 
-    data['lock'].acquire()
     if not data['sock']:
+        # only attempt reconnect every 10 seconds
+        now = time()
+        if now - data['last_connect_time'] < 10:
+            return False
+
+        data['last_connect_time'] = now
         collectd.info('connecting to %s:%s' % ( data['host'], data['port'] ) )
         try:
             data['sock'] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -100,11 +108,9 @@ def carbon_connect(data):
             result = True
         except:
             result = False
-            collectd.warning('error connecting socket')
+            collectd.warning('error connecting socket: %s' % format_exc())
     else:
         result = True
-
-    data['lock'].release()
 
     return result
 
@@ -114,16 +120,26 @@ def carbon_write_data(data, s):
     try:
         data['sock'].sendall(s)
         result = True
+    except socket.error, e:
+        data['sock'] = None
+        if isinstance(e.args, tuple):
+            collectd.warning('carbon_writer: socket error %d' % e[0])
+        else:
+            collectd.warning('carbon_writer: socket error')
     except:
-        collectd.warning('error sending data')
+        collectd.warning('carbon_writer: error sending data: %s' % format_exc())
 
     data['lock'].release()
     return result
 
 def carbon_write(v, data=None):
+    data['lock'].acquire()
     if not carbon_connect(data):
+        data['lock'].release()
         collectd.warning('no connection to carbon server')
         return
+
+    data['lock'].release()
 
     if v.type not in types:
         collectd.warning('carbon module does not know how to handle type %s. do you have all your types.db files configured?' % v.type)
