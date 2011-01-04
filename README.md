@@ -1,17 +1,57 @@
-collectd-carbon - Write Collectd to Carbon
+# Introduction
 
-Collectd is a metrics collection daemon. Carbon is a frontend to Whisper, which is a storage engine (similar to RRD). At this time, Carbon and Whisper are likely encountered alongside [Graphite](http://graphite.wikidot.com/start), a nifty real-time graphing application.
+collectd-carbon is a [collectd](http://www.collectd.org/) plugin which writes obtained values to Carbon.
 
-This Collectd plugin is implemented in Python, which means it will require the Python plugin to Collect, which itself requires Collectd 4.9.
+Carbon is a frontend to Whisper, which is a storage engine (similar to RRD). At this time, Carbon and Whisper are likely encountered alongside [Graphite](http://graphite.wikidot.com/start), a nifty real-time graphing application.
+
+Short version: collectd-carbon is an alternative to RRD.
+
+# Requirements
+
+* Collectd 4.9 or later (for the Python plugin)
+* Python 2.6 or later (might work on 2.5 but not tested there)
+* A running Carbon LineReceiver server (such as *carbon-cache.py*)
+
+# Configuration
 
 The plugin requires some configuration. This is done by passing parameters via the <Module> config section in your Collectd config. The following parameters are recognized:
 
 * LineReceiverHost - hostname or IP address where a Carbon line receiver is listening
 * LineReceiverPort - port on which line receiver is listening
-* TypesDB - file defining your Collectd types. This should be the sames as your TypesDB global config parameters. This is needed so the plugin can associate proper names for each data field within complex types. The plugin has to reparse the types files for the names because the Collectd Python API does not provide the means to extract them (the Perl and Java APIs do, however). If you do not define this parameter or do not have complete parameter definition, the plugin will spew errors for unknown data types.
+* TypesDB - file defining your Collectd types. This should be the sames as your TypesDB global config parameters. If not specified, the plugin will not work.
 * DeriveCounters - If present, the plugin will normalize COUNTER and DERIVE types by recording the difference between two subsequent values. See the section below.
 
-#Data Mangling
+## Example
+
+The following is an example Collectd configuration for this plugin:
+
+    <LoadPlugin python>
+        Globals true
+    </LoadPlugin>
+
+    <Plugin python>
+        # carbon_writer.py is at path /opt/collectd-plugins/carbon_writer.py
+        ModulePath "/opt/collectd-plugins/"
+
+        Import "carbon_writer"
+
+        <Module carbon_writer>
+            LineReceiverHost "myhost.mydomain"
+            LineReceiverPort 2003
+            DeriveCounters true
+            TypesDB "/usr/share/collectd/types.db"
+        </Module>
+    </Plugin>
+
+# Operational Notes
+
+If the connection to the line receiver cannot be established or goes bad, the plugin will automatically attempt to reconnect. If connections fail, the plugin will reconnect at most once every 10 seconds. This prevents many likely failures from occurring when the server is down.
+
+The plugin needs to parse Collectd type files. If there was an error parsing a specific type (look for log messages at Collectd startup time), the plugin will fail to write values for this type. It will simply skip over them and move on to the next value. It will write a log message every time this happens so you can correct the problem.
+
+The plugin needs to perform redundant parsing of the type files because the Collectd Python API does not provide an interface to the types information (unlike the Perl and Java plugin APIs). Hopefully this will be addressed in a future version of Collectd.
+
+# Data Mangling
 
 Collectd data is collected/written in discrete tuples having the following:
 
