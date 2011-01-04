@@ -18,6 +18,7 @@ from time import time
 
 host = None
 port = None
+derive = False
 types = {}
 
 def carbon_parse_types_file(path):
@@ -31,13 +32,17 @@ def carbon_parse_types_file(path):
             continue
 
         type_name = fields[0]
+
+        if type_name[0] == '#':
+            continue
+
         v = []
         for ds in fields[1:]:
             ds = ds.rstrip(',')
             ds_fields = ds.split(':')
 
             if len(ds_fields) != 4:
-                collectd.warning('invalid types.db data source type: %s' % ds)
+                collectd.warning('carbon_writer: cannot parse data source %s on type %s' % ( ds, type_name ))
                 continue
 
             v.append(ds_fields)
@@ -47,7 +52,7 @@ def carbon_parse_types_file(path):
     f.close()
 
 def carbon_config(c):
-    global host, port
+    global host, port, derive
 
     for child in c.children:
         if child.key == 'LineReceiverHost':
@@ -57,6 +62,8 @@ def carbon_config(c):
         elif child.key == 'TypesDB':
             for v in child.values:
                 carbon_parse_types_file(v)
+        elif child.key == 'DeriveCounters':
+            derive = True
 
     if not host:
         raise Exception('LineReceiverHost not defined')
@@ -65,10 +72,17 @@ def carbon_config(c):
         raise Exception('LineReceiverPort not defined')
 
 def carbon_init():
-    global host, port
+    global host, port, derive
     import threading
 
-    d = { 'host': host, 'port': port, 'sock': None, 'lock': threading.Lock() }
+    d = {
+        'host': host,
+        'port': port,
+        'derive': derive,
+        'sock': None,
+        'lock': threading.Lock(),
+        'values': { }
+    }
 
     carbon_connect(d)
 
@@ -133,19 +147,58 @@ def carbon_write(v, data=None):
 
     time = v.time
 
+    # we update shared recorded values, so lock to prevent race conditions
+    data['lock'].acquire()
+
     lines = []
     i = 0
     for value in v.values:
         ds_name = type[i][0]
         ds_type = type[i][1]
-        i += 1
 
         path_fields = metric_fields[:]
         path_fields.append(ds_name)
 
-        # TODO handle different data types here
-        line = '%s %f %d' % ( '.'.join(path_fields), value, time )
-        lines.append(line)
+        metric = '.'.join(path_fields)
+
+        new_value = None
+
+        # perform data normalization for COUNTER and DERIVE points
+        if data['derive'] and (ds_type == 'COUNTER' or ds_type == 'DERIVE'):
+            # we have an old value
+            if metric in data['values']:
+                min = type[i][2]
+                max = type[i][3]
+
+                if min == 'U':
+                    min = 0
+
+                old_value = data['values'][metric]
+
+                # overflow
+                if value < old_value:
+                    # this is funky. pretend as if this is the first data point
+                    if max == 'U':
+                        new_value = None
+                    else:
+                        new_value = max - old_value + value - min
+                else:
+                    new_value = value - old_value
+
+            # update previous value
+            data['values'][metric] = value
+
+            collectd.error('converted COUNTER or DERIVE value for %s' % v.type)
+        else:
+            new_value = value
+
+        if new_value is not None:
+            line = '%s %f %d' % ( metric, new_value, time )
+            lines.append(line)
+
+        i += 1
+
+    data['lock'].release()
 
     lines.append('')
     carbon_write_data(data, '\n'.join(lines))
