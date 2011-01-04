@@ -136,19 +136,19 @@ def carbon_write(v, data=None):
     data['lock'].acquire()
     if not carbon_connect(data):
         data['lock'].release()
-        collectd.warning('no connection to carbon server')
+        collectd.warning('carbon_writer: no connection to carbon server')
         return
 
     data['lock'].release()
 
     if v.type not in types:
-        collectd.warning('carbon module does not know how to handle type %s. do you have all your types.db files configured?' % v.type)
+        collectd.warning('carbon_writer: do not know how to handle type %s. do you have all your types.db files configured?' % v.type)
         return
 
     type = types[v.type]
 
     if len(type) != len(v.values):
-        collectd.warning('differing number of values for type %s' % v.type)
+        collectd.warning('carbon_writer: differing number of values for type %s' % v.type)
         return
 
     metric_fields = [ v.host.replace('.', '_') ]
