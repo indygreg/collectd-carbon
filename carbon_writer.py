@@ -188,7 +188,6 @@ def carbon_write(v, data=None):
             # update previous value
             data['values'][metric] = value
 
-            collectd.error('converted COUNTER or DERIVE value for %s' % v.type)
         else:
             new_value = value
 
