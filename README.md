@@ -8,7 +8,7 @@ Short version: collectd-carbon is an alternative to RRD.
 
 # Requirements
 
-* Collectd 4.9 or later (for the Python plugin)
+* Collectd 4.9 or later (for the Python plugin) (A patch may be required to fix the Python plugin - see below)
 * Python 2.6 or later (might work on 2.5 but not tested there)
 * A running Carbon LineReceiver server (such as *carbon-cache.py*)
 
@@ -83,3 +83,10 @@ When the plugin is configured with the *DeriveCounters* flag, the plugin will se
 * The plugin is aware of the minimum and maximum values and will handle overflows and wrap-arounds properly.
 * An overflow for a type with max value *U* is treated as an initial value. i.e. you will lose one data point.
 * A minimum value of *U* is treated as *0*.
+
+# Collectd Python Write Callback Bug
+
+At the time this was written, all released version of Collectd had a bug in the Python plugin where Python would receive bad values for certain data data sets. The bug would typically manifest as data values appearing to be 0. The original author of this plugin identified the bug and sent a fix to the Collectd development team.
+
+The fix is trivial and can be seen at https://github.com/indygreg/collectd/commit/31bc4bc67f9ae12fb593e18e0d3649e5d4fa13f2. The commit message contains a detailed description of the bug. Hopefully this patch will be incorporated in future Collectd releases so this plugin works out of the box.
+
