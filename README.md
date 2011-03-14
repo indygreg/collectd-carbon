@@ -4,7 +4,7 @@ collectd-carbon is a [collectd](http://www.collectd.org/) plugin which writes ob
 
 Carbon is a frontend to Whisper, which is a storage engine (similar to RRD). At this time, Carbon and Whisper are likely encountered alongside [Graphite](http://graphite.wikidot.com/start), a nifty real-time graphing application.
 
-Short version: collectd-carbon is an alternative to RRD.
+Short version: collectd-carbon is an alternative data writer to RRD.
 
 # Requirements
 
@@ -18,7 +18,7 @@ The plugin requires some configuration. This is done by passing parameters via t
 
 * LineReceiverHost - hostname or IP address where a Carbon line receiver is listening
 * LineReceiverPort - port on which line receiver is listening
-* TypesDB - file defining your Collectd types. This should be the sames as your TypesDB global config parameters. If not specified, the plugin will not work.
+* TypesDB - file(s) defining your Collectd types. This should be the sames as your TypesDB global config parameters. If not specified, the plugin will not work.
 * DeriveCounters - If present, the plugin will normalize COUNTER and DERIVE types by recording the difference between two subsequent values. See the section below.
 
 ## Example
@@ -86,7 +86,9 @@ When the plugin is configured with the *DeriveCounters* flag, the plugin will se
 
 # Collectd Python Write Callback Bug
 
-At the time this was written, all released version of Collectd had a bug in the Python plugin where Python would receive bad values for certain data data sets. The bug would typically manifest as data values appearing to be 0. The original author of this plugin identified the bug and sent a fix to the Collectd development team.
+At the time this was written, all most recent, released version of Collectd (4.10.2, 4.9.4) had a bug in the Python plugin where Python would receive bad values for certain data sets. The bug would typically manifest as data values appearing to be 0. The original author of this plugin identified the bug and sent a fix to the Collectd development team.
 
-The fix is trivial and can be seen at https://github.com/indygreg/collectd/commit/31bc4bc67f9ae12fb593e18e0d3649e5d4fa13f2. The commit message contains a detailed description of the bug. Hopefully this patch will be incorporated in future Collectd releases so this plugin works out of the box.
+The fix is trivial and can be seen at <https://github.com/indygreg/collectd/commit/31bc4bc67f9ae12fb593e18e0d3649e5d4fa13f2>. The commit message contains a detailed description of the bug. As of March 4, 2011, this patch is incorporated into the Collectd source tree and should be included in the next release.
+
+Until an official release is made with the fix, you will need to apply the aforementioned patch and rebuild Collectd to ensure proper values are dispatched via this plugin.
 
