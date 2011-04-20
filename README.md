@@ -1,6 +1,6 @@
 # Introduction
 
-collectd-carbon is a [collectd](http://www.collectd.org/) plugin which writes obtained values to Carbon.
+collectd-carbon is a [collectd](http://www.collectd.org/) plugin that writes obtained values to Carbon.
 
 Carbon is a frontend to Whisper, which is a storage engine (similar to RRD). At this time, Carbon and Whisper are likely encountered alongside [Graphite](http://graphite.wikidot.com/start), a nifty real-time graphing application.
 
@@ -79,16 +79,14 @@ Collectd data types, like RRDTool, differentiate between ABSOLUTE, COUNTER, DERI
 
 When the plugin is configured with the *DeriveCounters* flag, the plugin will send the difference between two data points to Carbon. Please note the following regarding behavior:
 
-* Data is sent to Carbon after receiving the 2nd data point. This is because the plugin must establish an initial value to calculate the difference from said value.
+* Data is sent to Carbon after receiving the 2nd data point. This is because the plugin must establish an initial value from which to calculate the difference.
 * The plugin is aware of the minimum and maximum values and will handle overflows and wrap-arounds properly.
 * An overflow for a type with max value *U* is treated as an initial value. i.e. you will lose one data point.
 * A minimum value of *U* is treated as *0*.
 
 # Collectd Python Write Callback Bug
 
-At the time this was written, all most recent, released version of Collectd (4.10.2, 4.9.4) had a bug in the Python plugin where Python would receive bad values for certain data sets. The bug would typically manifest as data values appearing to be 0. The original author of this plugin identified the bug and sent a fix to the Collectd development team.
+Collectd versions through 4.10.2 and 4.9.4 have a bug in the Python plugin where Python would receive bad values for certain data sets. The bug would typically manifest as data values appearing to be 0. The original author of this plugin identified the bug and sent a fix to the Collectd development team.
 
-The fix is trivial and can be seen at <https://github.com/indygreg/collectd/commit/31bc4bc67f9ae12fb593e18e0d3649e5d4fa13f2>. The commit message contains a detailed description of the bug. As of March 4, 2011, this patch is incorporated into the Collectd source tree and should be included in the next release.
-
-Until an official release is made with the fix, you will need to apply the aforementioned patch and rebuild Collectd to ensure proper values are dispatched via this plugin.
+Collectd versions 4.9.5, 4.10.3, and 5.0.0 are the first official versions with a fix for this bug. If you are not running one of these versions or have not applied the fix (which can be seen at <https://github.com/indygreg/collectd/commit/31bc4bc67f9ae12fb593e18e0d3649e5d4fa13f2>), you will likely dispatch wrong values to Carbon.
 
