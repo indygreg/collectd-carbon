@@ -53,6 +53,19 @@ def carbon_parse_types_file(path):
 
     f.close()
 
+def str_to_num(s):
+    """
+    Convert type limits from strings to floats for arithmetic.
+    Will force U[nlimited] values to be 0.
+    """
+
+    try:
+        n = float(s)
+    except ValueError:
+        n = 0
+
+    return n
+
 def carbon_config(c):
     global host, port, derive
 
@@ -183,20 +196,18 @@ def carbon_write(v, data=None):
         if data['derive'] and (ds_type == 'COUNTER' or ds_type == 'DERIVE'):
             # we have an old value
             if metric in data['values']:
-                v_type_min = v_type[i][2]
-                v_type_max = v_type[i][3]
-
-                if v_type_min == 'U':
-                    v_type_min = 0
-
                 old_value = data['values'][metric]
 
                 # overflow
                 if value < old_value:
-                    # this is funky. pretend as if this is the first data point
+                    v_type_max = v_type[i][3]
+
                     if v_type_max == 'U':
+                        # this is funky. pretend as if this is the first data point
                         new_value = None
                     else:
+                        v_type_min = str_to_num(v_type[i][2])
+                        v_type_max = str_to_num(v_type[i][3])
                         new_value = v_type_max - old_value + value - v_type_min
                 else:
                     new_value = value - old_value
