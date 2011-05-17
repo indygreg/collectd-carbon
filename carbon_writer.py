@@ -145,9 +145,9 @@ def carbon_write(v, data=None):
         collectd.warning('carbon_writer: do not know how to handle type %s. do you have all your types.db files configured?' % v.type)
         return
 
-    type = types[v.type]
+    v_type = types[v.type]
 
-    if len(type) != len(v.values):
+    if len(v_type) != len(v.values):
         collectd.warning('carbon_writer: differing number of values for type %s' % v.type)
         return
 
@@ -169,8 +169,8 @@ def carbon_write(v, data=None):
     lines = []
     i = 0
     for value in v.values:
-        ds_name = type[i][0]
-        ds_type = type[i][1]
+        ds_name = v_type[i][0]
+        ds_type = v_type[i][1]
 
         path_fields = metric_fields[:]
         path_fields.append(ds_name)
@@ -183,21 +183,21 @@ def carbon_write(v, data=None):
         if data['derive'] and (ds_type == 'COUNTER' or ds_type == 'DERIVE'):
             # we have an old value
             if metric in data['values']:
-                min = type[i][2]
-                max = type[i][3]
+                v_type_min = v_type[i][2]
+                v_type_max = v_type[i][3]
 
-                if min == 'U':
-                    min = 0
+                if v_type_min == 'U':
+                    v_type_min = 0
 
                 old_value = data['values'][metric]
 
                 # overflow
                 if value < old_value:
                     # this is funky. pretend as if this is the first data point
-                    if max == 'U':
+                    if v_type_max == 'U':
                         new_value = None
                     else:
-                        new_value = max - old_value + value - min
+                        new_value = v_type_max - old_value + value - v_type_min
                 else:
                     new_value = value - old_value
 
