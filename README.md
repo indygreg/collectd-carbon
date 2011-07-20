@@ -9,7 +9,7 @@ Short version: collectd-carbon is an alternative data writer to RRD.
 # Requirements
 
 * Collectd 4.9 or later (for the Python plugin) (A patch may be required to fix the Python plugin - see below)
-* Python 2.6 or later (might work on 2.5 but not tested there)
+* Python 2.4 or later
 * A running Carbon LineReceiver server (such as *carbon-cache.py*)
 
 # Configuration
@@ -90,3 +90,39 @@ Collectd versions through 4.10.2 and 4.9.4 have a bug in the Python plugin where
 
 Collectd versions 4.9.5, 4.10.3, and 5.0.0 are the first official versions with a fix for this bug. If you are not running one of these versions or have not applied the fix (which can be seen at <https://github.com/indygreg/collectd/commit/31bc4bc67f9ae12fb593e18e0d3649e5d4fa13f2>), you will likely dispatch wrong values to Carbon.
 
+# Collectd 4.10.3 on EL5 ImportError
+
+Using the plugin with collectd-4.10.3 from EPEL5 on RHEL or CentOS 5.x may produce the following error:
+
+    Jul 20 14:54:38 mon0 collectd[2487]: plugin_load_file: The global flag is not supported, libtool 2 is required for this.
+    Jul 20 14:54:38 mon0 collectd[2487]: python plugin: Error importing module "carbon_writer".
+    Jul 20 14:54:38 mon0 collectd[2487]: Unhandled python exception in importing module: ImportError: /usr/lib64/python2.4/lib-dynload/_socketmodule.so: undefined symbol: PyExc_ValueError
+    Jul 20 14:54:38 mon0 collectd[2487]: python plugin: Found a configuration for the "carbon_writer" plugin, but the plugin isn't loaded or didn't register a configuration callback.
+    Jul 20 14:54:38 mon0 collectd[2488]: plugin_dispatch_values: No write callback has been registered. Please load at least one output plugin, if you want the collected data to be stored.
+    Jul 20 14:54:38 mon0 collectd[2488]: Filter subsystem: Built-in target `write': Dispatching value to all write plugins failed with status 2 (ENOENT). Most likely this means you didn't load any write plugins.
+
+This may also occur on other operating systems. It is caused by a libtool/libltdl quirk described in [this mailing list thread](http://mailman.verplant.org/pipermail/collectd/2008-March/001616.html). As per the workarounds detailed there, you may either:
+
+ 1. Modify the init script.
+
+        @@ -25,7 +25,7 @@
+                echo -n $"Starting $prog: "
+                if [ -r "$CONFIG" ]
+                then
+        -               daemon /usr/sbin/collectd -C "$CONFIG"
+        +               LD_PRELOAD=/usr/lib64/libpython2.4.so daemon /usr/sbin/collectd -C "$CONFIG"
+                        RETVAL=$?
+                        echo
+                        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog
+
+ 1. Modify the RPM and rebuild.
+
+        @@ -182,7 +182,7 @@
+         
+         
+         %build
+        -%configure \
+        +%configure CFLAGS=-"DLT_LAZY_OR_NOW='RTLD_LAZY|RTLD_GLOBAL'" \
+             --disable-static \
+             --disable-ascent \
+             --disable-apple_sensors \
