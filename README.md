@@ -9,7 +9,7 @@ Short version: collectd-carbon is an alternative data writer to RRD.
 # Requirements
 
 * Collectd 4.9 or later (for the Python plugin) (A patch may be required to fix the Python plugin - see below)
-* Python 2.6 or later (might work on 2.5 but not tested there)
+* Python 2.4 or later
 * A running Carbon LineReceiver server (such as *carbon-cache.py*)
 
 # Configuration
