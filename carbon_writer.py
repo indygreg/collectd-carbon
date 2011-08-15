@@ -21,6 +21,7 @@ from traceback import format_exc
 host = None
 port = None
 derive = False
+prefix = None
 types = {}
 
 def carbon_parse_types_file(path):
@@ -67,7 +68,7 @@ def str_to_num(s):
     return n
 
 def carbon_config(c):
-    global host, port, derive
+    global host, port, derive, prefix
 
     for child in c.children:
         if child.key == 'LineReceiverHost':
@@ -79,6 +80,8 @@ def carbon_config(c):
                 carbon_parse_types_file(v)
         elif child.key == 'DeriveCounters':
             derive = True
+        elif child.key == 'MetricPrefix':
+            prefix = child.values[0]
 
     if not host:
         raise Exception('LineReceiverHost not defined')
@@ -164,7 +167,8 @@ def carbon_write(v, data=None):
         collectd.warning('carbon_writer: differing number of values for type %s' % v.type)
         return
 
-    metric_fields = [ v.host.replace('.', '_') ]
+    metric_fields = [] if not prefix else [ prefix ]
+    metric_fields.append(v.host.replace('.', '_'))
 
     metric_fields.append(v.plugin)
     if v.plugin_instance:
