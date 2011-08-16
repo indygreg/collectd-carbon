@@ -20,6 +20,7 @@ The plugin requires some configuration. This is done by passing parameters via t
 * LineReceiverPort - port on which line receiver is listening
 * TypesDB - file(s) defining your Collectd types. This should be the sames as your TypesDB global config parameters. If not specified, the plugin will not work.
 * DeriveCounters - If present, the plugin will normalize COUNTER and DERIVE types by recording the difference between two subsequent values. See the section below.
+* MetricPrefix - If present, all metric names will contain this string prefix. Do not include a trailing period.
 
 ## Example
 
