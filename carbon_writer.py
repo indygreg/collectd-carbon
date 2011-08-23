@@ -24,7 +24,7 @@ derive = False
 prefix = None
 types = {}
 postfix = None
-separator = "_"
+host_separator = "_"
 
 def carbon_parse_types_file(path):
     global types
@@ -70,7 +70,7 @@ def str_to_num(s):
     return n
 
 def carbon_config(c):
-    global host, port, derive, prefix, postfix, separator
+    global host, port, derive, prefix, postfix, host_separator
 
     for child in c.children:
         if child.key == 'LineReceiverHost':
@@ -87,7 +87,7 @@ def carbon_config(c):
         elif child.key == 'HostPostfix':
             postfix = child.values[0]
         elif child.key == 'HostSeparator':
-            separator = child.values[0]
+            host_separator = child.values[0]
 
     if not host:
         raise Exception('LineReceiverHost not defined')
@@ -175,9 +175,9 @@ def carbon_write(v, data=None):
 
     metric_fields = [] if not prefix else [ prefix ]
 
-    metric_fields.append(v.host.replace('.', separator))
+    metric_fields.append(v.host.replace('.', host_separator))
 
-    if not postfix == "None":
+    if postfix is not None:
         metric_fields.append(postfix)
 
     metric_fields.append(v.plugin)
