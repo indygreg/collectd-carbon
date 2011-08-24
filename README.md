@@ -21,6 +21,8 @@ The plugin requires some configuration. This is done by passing parameters via t
 * TypesDB - file(s) defining your Collectd types. This should be the sames as your TypesDB global config parameters. If not specified, the plugin will not work.
 * DeriveCounters - If present, the plugin will normalize COUNTER and DERIVE types by recording the difference between two subsequent values. See the section below.
 * MetricPrefix - If present, all metric names will contain this string prefix. Do not include a trailing period.
+* HostPostfix - If present, all hostnames will contain this string postfix (my_host_name.HostPostfix). Do not include a trailing period.
+* HostSeparator - If present, will change the default behaivior of inserting a "_" between the hostname (my_host_name) to this value.
 
 ## Example
 
@@ -119,8 +121,8 @@ This may also occur on other operating systems. It is caused by a libtool/libltd
  1. Modify the RPM and rebuild.
 
         @@ -182,7 +182,7 @@
-         
-         
+
+
          %build
         -%configure \
         +%configure CFLAGS=-"DLT_LAZY_OR_NOW='RTLD_LAZY|RTLD_GLOBAL'" \
