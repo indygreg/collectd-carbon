@@ -12,6 +12,12 @@ Short version: collectd-carbon is an alternative data writer to RRD.
 * Python 2.4 or later
 * A running Carbon LineReceiver server (such as *carbon-cache.py*)
 
+# Version Information
+
+collectd-carbon does not currently maintain release versions. The policy (at least on indygreg's original Github repository) is that the *master* branch should always be stable and production ready.
+
+As always, it is probably best to exercise discretion. If a commit has landed recently, you may want to consider looking it over and/or waiting a little while for others to test it for you.
+
 # Configuration
 
 The plugin requires some configuration. This is done by passing parameters via the <Module> config section in your Collectd config. The following parameters are recognized:
