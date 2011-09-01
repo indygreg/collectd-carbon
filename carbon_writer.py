@@ -173,7 +173,10 @@ def carbon_write(v, data=None):
         collectd.warning('carbon_writer: differing number of values for type %s' % v.type)
         return
 
-    metric_fields = [] if not prefix else [ prefix ]
+    if not prefix:
+        metric_fields = [] 
+    else:
+        metric_fields = [ prefix ]
 
     metric_fields.append(v.host.replace('.', host_separator))
 
