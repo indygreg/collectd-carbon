@@ -93,6 +93,14 @@ When the plugin is configured with the *DeriveCounters* flag, the plugin will se
 * An overflow for a type with max value *U* is treated as an initial value. i.e. you will lose one data point.
 * A minimum value of *U* is treated as *0*.
 
+Please note that *DeriveCounters* stores the difference, not the
+actually time-derivative, between 2 values. This can lead to some
+unexpected, but still valid, behavior. For example, with a Collectd
+polling interval of 10s, values dispatches from the CPU plugin will be
+normalized to around 1000 (100 per each second). RRD, by contrast, would
+normalize values to around 100. If graphed, the values should form the
+same shapes, but off by a scale of 10:1.
+
 # Collectd Python Write Callback Bug
 
 Collectd versions through 4.10.2 and 4.9.4 have a bug in the Python plugin where Python would receive bad values for certain data sets. The bug would typically manifest as data values appearing to be 0. The original author of this plugin identified the bug and sent a fix to the Collectd development team.
