@@ -46,8 +46,11 @@ following parameters are recognized:
   prefix. Do not include a trailing period.
 * HostPostfix - If present, all hostnames will contain this string
   postfix (my_host_name.HostPostfix). Do not include a trailing period.
-* HostSeparator - If present, will change the default behaivior of
+* HostSeparator - If present, will change the default behavior of
   inserting a "_" between the hostname (my_host_name) to this value.
+* MetricSeparator - If present, will change the default behavior of inserting
+  a "." between type and type_instances(s). This can be used to prevent deep
+  paths in Graphite/carbon.
 
 ## Example
 

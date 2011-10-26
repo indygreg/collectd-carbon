@@ -71,7 +71,8 @@ def str_to_num(s):
     return n
 
 def carbon_config(c):
-    global host, port, derive, prefix, postfix, host_separator
+    global host, port, derive, prefix, postfix, host_separator, \
+            metric_separator
 
     for child in c.children:
         if child.key == 'LineReceiverHost':
