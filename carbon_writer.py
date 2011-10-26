@@ -21,6 +21,7 @@ from traceback import format_exc
 host = None
 port = None
 derive = False
+intervals = False
 prefix = None
 types = {}
 postfix = None
@@ -70,7 +71,7 @@ def str_to_num(s):
     return n
 
 def carbon_config(c):
-    global host, port, derive, prefix, postfix, host_separator
+    global host, port, derive, intervals, prefix, postfix, host_separator
 
     for child in c.children:
         if child.key == 'LineReceiverHost':
@@ -81,6 +82,8 @@ def carbon_config(c):
             for v in child.values:
                 carbon_parse_types_file(v)
         elif child.key == 'DeriveCounters':
+            derive = True
+        elif child.key == 'DeriveIntervals':
             derive = True
         elif child.key == 'MetricPrefix':
             prefix = child.values[0]
@@ -96,16 +99,18 @@ def carbon_config(c):
         raise Exception('LineReceiverPort not defined')
 
 def carbon_init():
-    global host, port, derive
+    global host, port, derive, intervals
     import threading
 
     d = {
         'host': host,
         'port': port,
         'derive': derive,
+        'intervals': intervals,
         'sock': None,
         'lock': threading.Lock(),
         'values': { },
+        'times': { },
         'last_connect_time': 0
     }
 
@@ -228,8 +233,15 @@ def carbon_write(v, data=None):
                 else:
                     new_value = value - old_value
 
+                if data['intervals'] and metric in data['times']:
+                    interval = time - data['times'][metric]
+                    if interval < 1:
+                        interval = 1
+                    new_value = new_value / interval
+
             # update previous value
             data['values'][metric] = value
+            data['times'][metric] = time
 
         else:
             new_value = value

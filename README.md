@@ -42,6 +42,9 @@ following parameters are recognized:
 * DeriveCounters - If present, the plugin will normalize COUNTER and
   DERIVE types by recording the difference between two subsequent
   values. See the section below.
+* DeriveIntervals - If present, the plugin will divide the values of
+  COUNTER and DERIVE types by the interval between the two subsequent
+  values. See the section below.
 * MetricPrefix - If present, all metric names will contain this string
   prefix. Do not include a trailing period.
 * HostPostfix - If present, all hostnames will contain this string
@@ -148,6 +151,10 @@ polling interval of 10s, values dispatches from the CPU plugin will be
 normalized to around 1000 (100 per each second). RRD, by contrast, would
 normalize values to around 100. If graphed, the values should form the
 same shapes, but off by a scale of 10:1.
+
+If *DeriveIntervals* is configured, the actual time-derivative betwen the
+values is stored. This results in CPU plugin results that are normalized to
+around 100 (like RRD).
 
 # Collectd Python Write Callback Bug
 
