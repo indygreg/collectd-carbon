@@ -49,8 +49,8 @@ following parameters are recognized:
 * HostSeparator - If present, will change the default behavior of
   inserting a "_" between the hostname (my_host_name) to this value.
 * MetricSeparator - If present, will change the default behavior of inserting
-  a "." between type and type_instances(s). This can be used to prevent deep
-  paths in Graphite/carbon.
+  a "." within type and type_instances. This can be used to prevent deep
+  paths in Graphite/carbon for IPs and hostnames.
 
 ## Example
 
