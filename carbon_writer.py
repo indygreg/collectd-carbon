@@ -26,6 +26,7 @@ prefix = None
 types = {}
 postfix = None
 host_separator = "_"
+metric_separator = "."
 
 def carbon_parse_types_file(path):
     global types
@@ -71,7 +72,8 @@ def str_to_num(s):
     return n
 
 def carbon_config(c):
-    global host, port, derive, intervals, prefix, postfix, host_separator
+    global host, port, derive, intervals, prefix, postfix, host_separator, \
+            metric_separator
 
     for child in c.children:
         if child.key == 'LineReceiverHost':
@@ -91,6 +93,8 @@ def carbon_config(c):
             postfix = child.values[0]
         elif child.key == 'HostSeparator':
             host_separator = child.values[0]
+        elif child.key == 'MetricSeparator':
+            metric_separator = child.values[0]
 
     if not host:
         raise Exception('LineReceiverHost not defined')
@@ -189,11 +193,11 @@ def carbon_write(v, data=None):
 
     metric_fields.append(v.plugin)
     if v.plugin_instance:
-        metric_fields.append(v.plugin_instance)
+        metric_fields.append(v.plugin_instance.replace('.', metric_separator))
 
     metric_fields.append(v.type)
     if v.type_instance:
-        metric_fields.append(v.type_instance)
+        metric_fields.append(v.type_instance.replace('.', metric_separator))
 
     time = v.time
 
