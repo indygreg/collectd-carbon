@@ -224,7 +224,7 @@ def carbon_write(v, data=None):
                 ds_type == 'DERIVE'):
             # we have an old value
             if metric in data['values']:
-                old_value = data['values'][metric][1]
+                old_time, old_value = data['values'][metric]
 
                 # overflow
                 if value < old_value:
@@ -241,7 +241,7 @@ def carbon_write(v, data=None):
                     new_value = value - old_value
 
                 if data['differentiate_values_over_time']:
-                    interval = time - data['values'][metric][0]
+                    interval = time - old_time
                     if interval < 1:
                         interval = 1
                     new_value = new_value / interval
