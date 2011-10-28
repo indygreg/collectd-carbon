@@ -20,7 +20,8 @@ from traceback import format_exc
 
 host = None
 port = None
-derive = False
+differentiate_values = False
+differentiate_values_over_time = False
 prefix = None
 types = {}
 postfix = None
@@ -71,8 +72,8 @@ def str_to_num(s):
     return n
 
 def carbon_config(c):
-    global host, port, derive, prefix, postfix, host_separator, \
-            metric_separator
+    global host, port, differentiate_values, differentiate_values_over_time, \
+            prefix, postfix, host_separator, metric_separator
 
     for child in c.children:
         if child.key == 'LineReceiverHost':
@@ -82,8 +83,14 @@ def carbon_config(c):
         elif child.key == 'TypesDB':
             for v in child.values:
                 carbon_parse_types_file(v)
+        # DeriveCounters maintained for backwards compatibility
         elif child.key == 'DeriveCounters':
-            derive = True
+            differentiate_values = True
+        elif child.key == 'DifferentiateCounters':
+            differentiate_values = True
+        elif child.key == 'DifferentiateCountersOverTime':
+            differentiate_values = True
+            differentiate_values_over_time = True
         elif child.key == 'MetricPrefix':
             prefix = child.values[0]
         elif child.key == 'HostPostfix':
@@ -100,13 +107,13 @@ def carbon_config(c):
         raise Exception('LineReceiverPort not defined')
 
 def carbon_init():
-    global host, port, derive
     import threading
 
     d = {
         'host': host,
         'port': port,
-        'derive': derive,
+        'differentiate_values': differentiate_values,
+        'differentiate_values_over_time': differentiate_values_over_time,
         'sock': None,
         'lock': threading.Lock(),
         'values': { },
@@ -213,10 +220,11 @@ def carbon_write(v, data=None):
         new_value = None
 
         # perform data normalization for COUNTER and DERIVE points
-        if data['derive'] and (ds_type == 'COUNTER' or ds_type == 'DERIVE'):
+        if data['differentiate_values'] and (ds_type == 'COUNTER' or
+                ds_type == 'DERIVE'):
             # we have an old value
             if metric in data['values']:
-                old_value = data['values'][metric]
+                old_value = data['values'][metric][1]
 
                 # overflow
                 if value < old_value:
@@ -232,8 +240,14 @@ def carbon_write(v, data=None):
                 else:
                     new_value = value - old_value
 
+                if data['differentiate_values_over_time']:
+                    interval = time - data['values'][metric][0]
+                    if interval < 1:
+                        interval = 1
+                    new_value = new_value / interval
+
             # update previous value
-            data['values'][metric] = value
+            data['values'][metric] = ( time, value )
 
         else:
             new_value = value

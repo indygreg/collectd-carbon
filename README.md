@@ -39,9 +39,13 @@ following parameters are recognized:
 * TypesDB - file(s) defining your Collectd types. This should be the
   sames as your TypesDB global config parameters. If not specified, the
   plugin will not work.
-* DeriveCounters - If present, the plugin will normalize COUNTER and
-  DERIVE types by recording the difference between two subsequent
+* DifferentiateCounters - If present, the plugin will normalize COUNTER
+  and DERIVE types by recording the difference between two subsequent
   values. See the section below.
+* DifferentiateCountersOverTime - If present, the plugin will divide
+  the values of COUNTER and DERIVE types by the interval between the
+  two subsequent values. Implies DifferentiateCounters. See the section
+  below.
 * MetricPrefix - If present, all metric names will contain this string
   prefix. Do not include a trailing period.
 * HostPostfix - If present, all hostnames will contain this string
@@ -69,7 +73,7 @@ The following is an example Collectd configuration for this plugin:
         <Module carbon_writer>
             LineReceiverHost "myhost.mydomain"
             LineReceiverPort 2003
-            DeriveCounters true
+            DifferentiateCountersOverTime true
             TypesDB "/usr/share/collectd/types.db"
         </Module>
     </Plugin>
@@ -131,9 +135,9 @@ special in Carbon. And, if you are using Graphite, they complicate
 matters because you'll want to apply a derivative function to COUNTER
 and DERIVE types to obtain any useful values.
 
-When the plugin is configured with the *DeriveCounters* flag, the plugin
-will send the difference between two data points to Carbon. Please note
-the following regarding behavior:
+When the plugin is configured with the *DifferentiateCounters* flag,
+the plugin will send the difference between two data points to Carbon.
+Please note the following regarding behavior:
 
 * Data is sent to Carbon after receiving the 2nd data point. This is
   because the plugin must establish an initial value from which to
@@ -144,13 +148,20 @@ the following regarding behavior:
   value. i.e. you will lose one data point.
 * A minimum value of *U* is treated as *0*.
 
-Please note that *DeriveCounters* stores the difference, not the
+Please note that *DifferentiateCounters* stores the difference, not the
 actually time-derivative, between 2 values. This can lead to some
 unexpected, but still valid, behavior. For example, with a Collectd
 polling interval of 10s, values dispatches from the CPU plugin will be
 normalized to around 1000 (100 per each second). RRD, by contrast, would
 normalize values to around 100. If graphed, the values should form the
 same shapes, but off by a scale of 10:1.
+
+If *DifferentiateCountersOverTime* is configured, the actual
+time-derivative betwen the values is stored. This results in CPU plugin
+results that are normalized to around 100 (like RRD).
+
+*DifferentiateCountersOverTime* implies *DifferentiateCounters*.
+
 
 # Collectd Python Write Callback Bug
 
