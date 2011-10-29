@@ -17,6 +17,11 @@ Short version: collectd-carbon is an alternative data writer to RRD.
 * Python 2.4 or later
 * A running Carbon LineReceiver server (such as *carbon-cache.py*)
 
+If you don't have Python configured and still wish to write Collectd
+information to Graphite/Carbon, see
+https://github.com/jssjr/collectd-write_graphite for a similar plugin
+written in C.
+
 # Version Information
 
 collectd-carbon does not currently maintain release versions. The policy
