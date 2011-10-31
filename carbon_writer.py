@@ -241,7 +241,8 @@ def carbon_write(v, data=None):
                 else:
                     new_value = value - old_value
 
-                if data['differentiate_values_over_time']:
+                if isinstance(new_value, (float, int)) and
+                        data['differentiate_values_over_time']:
                     interval = time - old_time
                     if interval < 1:
                         interval = 1
