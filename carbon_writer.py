@@ -22,6 +22,7 @@ host = None
 port = None
 differentiate_values = False
 differentiate_values_over_time = False
+lowercase_metric_names = False
 prefix = None
 types = {}
 postfix = None
@@ -71,9 +72,24 @@ def str_to_num(s):
 
     return n
 
+def sanitize_field(field):
+    """
+    Santize Metric Fields: replace dot and space with metric_separator. Delete
+    parentheses. Convert to lower case if configured to do so.
+    """
+    field = field.strip()
+    field = field.replace('.', metric_separator)
+    field = field.replace(' ', metric_separator)
+    field = field.replace('(', '')
+    field = field.replace(')', '')
+    if lowercase_metric_names:
+        field = field.lower()
+    return field
+
 def carbon_config(c):
     global host, port, differentiate_values, differentiate_values_over_time, \
-            prefix, postfix, host_separator, metric_separator
+            prefix, postfix, host_separator, metric_separator, \
+            lowercase_metric_names
 
     for child in c.children:
         if child.key == 'LineReceiverHost':
@@ -91,6 +107,8 @@ def carbon_config(c):
         elif child.key == 'DifferentiateCountersOverTime':
             differentiate_values = True
             differentiate_values_over_time = True
+        elif child.key == 'LowercaseMetricNames':
+            lowercase_metric_names = True
         elif child.key == 'MetricPrefix':
             prefix = child.values[0]
         elif child.key == 'HostPostfix':
@@ -114,6 +132,7 @@ def carbon_init():
         'port': port,
         'differentiate_values': differentiate_values,
         'differentiate_values_over_time': differentiate_values_over_time,
+        'lowercase_metric_names': lowercase_metric_names,
         'sock': None,
         'lock': threading.Lock(),
         'values': { },
@@ -195,11 +214,11 @@ def carbon_write(v, data=None):
 
     metric_fields.append(v.plugin)
     if v.plugin_instance:
-        metric_fields.append(v.plugin_instance.replace('.', metric_separator))
+        metric_fields.append(sanitize_field(v.plugin_instance))
 
     metric_fields.append(v.type)
     if v.type_instance:
-        metric_fields.append(v.type_instance.replace('.', metric_separator))
+        metric_fields.append(sanitize_field(v.type_instance))
 
     time = v.time
 
