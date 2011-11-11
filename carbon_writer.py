@@ -15,6 +15,7 @@
 import collectd
 import errno
 import socket
+from string import maketrans
 from time import time
 from traceback import format_exc
 
@@ -78,10 +79,8 @@ def sanitize_field(field):
     parentheses. Convert to lower case if configured to do so.
     """
     field = field.strip()
-    field = field.replace('.', metric_separator)
-    field = field.replace(' ', metric_separator)
-    field = field.replace('(', '')
-    field = field.replace(')', '')
+    trans = maketrans(' .', metric_separator * 2)
+    field = field.translate(trans, '()')
     if lowercase_metric_names:
         field = field.lower()
     return field
