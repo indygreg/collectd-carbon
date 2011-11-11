@@ -51,7 +51,7 @@ following parameters are recognized:
   the values of COUNTER and DERIVE types by the interval between the
   two subsequent values. Implies DifferentiateCounters. See the section
   below.
-* LowercaseMetricNames - If present, all metric names will be convereted
+* LowercaseMetricNames - If present, all metric names will be converted
   to lower-case.
 * MetricPrefix - If present, all metric names will contain this string
   prefix. Do not include a trailing period.
