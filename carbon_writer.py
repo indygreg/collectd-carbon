@@ -220,8 +220,8 @@ def carbon_write(v, data=None):
         new_value = None
 
         # perform data normalization for COUNTER and DERIVE points
-        if (isinstance(value, (float, int)) and \
-                data['differentiate_values'] and \
+        if (isinstance(value, (float, int)) and
+                data['differentiate_values'] and
                 (ds_type == 'COUNTER' or ds_type == 'DERIVE')):
             # we have an old value
             if metric in data['values']:
@@ -241,8 +241,8 @@ def carbon_write(v, data=None):
                 else:
                     new_value = value - old_value
 
-                if isinstance(new_value, (float, int)) and \
-                        data['differentiate_values_over_time']:
+                if (isinstance(new_value, (float, int)) and
+                        data['differentiate_values_over_time']):
                     interval = time - old_time
                     if interval < 1:
                         interval = 1
