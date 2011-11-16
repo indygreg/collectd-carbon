@@ -51,6 +51,8 @@ following parameters are recognized:
   the values of COUNTER and DERIVE types by the interval between the
   two subsequent values. Implies DifferentiateCounters. See the section
   below.
+* LowercaseMetricNames - If present, all metric names will be converted
+  to lower-case.
 * MetricPrefix - If present, all metric names will contain this string
   prefix. Do not include a trailing period.
 * HostPostfix - If present, all hostnames will contain this string
@@ -65,20 +67,21 @@ following parameters are recognized:
 
 The following is an example Collectd configuration for this plugin:
 
-    <LoadPlugin python>
+    <LoadPlugin "python">
         Globals true
     </LoadPlugin>
 
-    <Plugin python>
+    <Plugin "python">
         # carbon_writer.py is at path /opt/collectd-plugins/carbon_writer.py
         ModulePath "/opt/collectd-plugins/"
 
         Import "carbon_writer"
 
-        <Module carbon_writer>
+        <Module "carbon_writer">
             LineReceiverHost "myhost.mydomain"
             LineReceiverPort 2003
             DifferentiateCountersOverTime true
+            LowercaseMetricNames true
             TypesDB "/usr/share/collectd/types.db"
         </Module>
     </Plugin>
