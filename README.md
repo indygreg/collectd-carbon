@@ -170,8 +170,13 @@ results that are normalized to around 100 (like RRD).
 
 *DifferentiateCountersOverTime* implies *DifferentiateCounters*.
 
+# Troubleshooting
 
-# Collectd Python Write Callback Bug
+You can see the raw values dispatched to carbon by packet sniffing:
+
+    $ sudo ngrep -qd any tcp dst port 2003
+
+## Collectd Python Write Callback Bug
 
 Collectd versions through 4.10.2 and 4.9.4 have a bug in the Python
 plugin where Python would receive bad values for certain data sets. The
@@ -185,7 +190,7 @@ versions or have not applied the fix (which can be seen at
 <https://github.com/indygreg/collectd/commit/31bc4bc67f9ae12fb593e18e0d3649e5d4fa13f2>),
 you will likely dispatch wrong values to Carbon.
 
-# Collectd 4.10.3 on EL5 ImportError
+## Collectd 4.10.3 on EL5 ImportError
 
 Using the plugin with collectd-4.10.3 from EPEL5 on RHEL or CentOS 5.x
 may produce the following error:
