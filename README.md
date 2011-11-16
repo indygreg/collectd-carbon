@@ -174,7 +174,7 @@ results that are normalized to around 100 (like RRD).
 
 You can see the raw values dispatched to carbon by packet sniffing:
 
-    $ sudo ngrep -qd any tcp dst port 2003
+    $ sudo ngrep -qd any . tcp dst port 2003
 
 ## Collectd Python Write Callback Bug
 
