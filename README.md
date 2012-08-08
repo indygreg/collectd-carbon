@@ -41,6 +41,8 @@ following parameters are recognized:
 * LineReceiverHost - hostname or IP address where a Carbon line receiver
   is listening
 * LineReceiverPort - port on which line receiver is listening
+* LineReceiverProtocol - method in which you wish to send the packet to 
+  the line receiver.  Options are: tcp or udp (default = tcp)
 * TypesDB - file(s) defining your Collectd types. This should be the
   sames as your TypesDB global config parameters. If not specified, the
   plugin will not work.
@@ -80,6 +82,7 @@ The following is an example Collectd configuration for this plugin:
         <Module "carbon_writer">
             LineReceiverHost "myhost.mydomain"
             LineReceiverPort 2003
+            LineReceiverProtocol "tcp"
             DifferentiateCountersOverTime true
             LowercaseMetricNames true
             TypesDB "/usr/share/collectd/types.db"
@@ -175,6 +178,10 @@ results that are normalized to around 100 (like RRD).
 You can see the raw values dispatched to carbon by packet sniffing:
 
     $ sudo ngrep -qd any . tcp dst port 2003
+
+or
+
+    $ sudo ngrep -qd any . udp dst port 2003
 
 ## Collectd Python Write Callback Bug
 

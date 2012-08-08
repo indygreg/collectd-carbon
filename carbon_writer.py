@@ -29,6 +29,7 @@ types = {}
 postfix = None
 host_separator = "_"
 metric_separator = "."
+protocol = "tcp"
 
 def carbon_parse_types_file(path):
     global types
@@ -88,7 +89,7 @@ def sanitize_field(field):
 def carbon_config(c):
     global host, port, differentiate_values, differentiate_values_over_time, \
             prefix, postfix, host_separator, metric_separator, \
-            lowercase_metric_names
+            lowercase_metric_names, protocol
 
     for child in c.children:
         if child.key == 'LineReceiverHost':
@@ -116,12 +117,17 @@ def carbon_config(c):
             host_separator = child.values[0]
         elif child.key == 'MetricSeparator':
             metric_separator = child.values[0]
+        elif child.key == 'LineReceiverProtocol':
+            protocol = str(child.values[0])
 
     if not host:
         raise Exception('LineReceiverHost not defined')
 
     if not port:
         raise Exception('LineReceiverPort not defined')
+
+    collectd.info('Initializing carbon_writer client in %s socket mode.'
+                         % protocol.upper() )
 
 def carbon_init():
     import threading
@@ -145,8 +151,8 @@ def carbon_init():
 def carbon_connect(data):
     result = False
 
-    if not data['sock']:
-        # only attempt reconnect every 10 seconds
+    if not data['sock'] and protocol.lower() == 'tcp':
+        # only attempt reconnect every 10 seconds if protocol of type TCP
         now = time()
         if now - data['last_connect_time'] < 10:
             return False
@@ -161,6 +167,8 @@ def carbon_connect(data):
             result = False
             collectd.warning('error connecting socket: %s' % format_exc())
     else:
+        # we're either connected, or protocol does not == tcp. we will send 
+        # data via udp/SOCK_DGRAM call.
         result = True
 
     return result
@@ -168,8 +176,14 @@ def carbon_connect(data):
 def carbon_write_data(data, s):
     result = False
     data['lock'].acquire()
+
     try:
-        data['sock'].sendall(s)
+        if protocol.lower() == 'tcp':
+            data['sock'].sendall(s)
+        else:
+            # send message to via UDP to the line receiver .
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.sendto(s, (host, port))
         result = True
     except socket.error, e:
         data['sock'] = None
@@ -185,7 +199,7 @@ def carbon_write_data(data, s):
 
 def carbon_write(v, data=None):
     data['lock'].acquire()
-    if not carbon_connect(data):
+    if not carbon_connect(data) and protocol.lower() == 'tcp':
         data['lock'].release()
         collectd.warning('carbon_writer: no connection to carbon server')
         return
