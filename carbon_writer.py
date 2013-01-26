@@ -13,7 +13,6 @@
 #  limitations under the License.
 #
 import collectd
-import errno
 import socket
 from string import maketrans
 from time import time
