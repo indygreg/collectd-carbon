@@ -76,11 +76,12 @@ def str_to_num(s):
 def sanitize_field(field):
     """
     Santize Metric Fields: replace dot and space with metric_separator. Delete
-    parentheses. Convert to lower case if configured to do so.
+    parentheses and quotes. Convert to lower case if configured to do so.
     """
     field = field.strip()
     trans = maketrans(' .', metric_separator * 2)
     field = field.translate(trans, '()')
+    field = field.replace('"', '')
     if lowercase_metric_names:
         field = field.lower()
     return field
